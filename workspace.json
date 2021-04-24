@@ -34,7 +34,7 @@
           }
         },
         "version": {
-          "builder": "@jscutlery/semver:version",
+          "executor": "@jscutlery/semver:version",
           "options": {
             "push": true,
             "remote": "origin",
