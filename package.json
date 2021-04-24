@@ -23,7 +23,12 @@
     "update": "nx migrate latest",
     "workspace-generator": "nx workspace-generator",
     "dep-graph": "nx dep-graph",
-    "help": "nx help"
+    "help": "nx help",
+    "heroku-postbuild": "nx build api --prod",
+    "heroku-start": "node dist/apps/api/main.js"
+  },
+  "engines": {
+    "node": "14.x"
   },
   "private": true,
   "dependencies": {
