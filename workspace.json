@@ -33,6 +33,14 @@
             }
           }
         },
+        "version": {
+          "builder": "@jscutlery/semver:version",
+          "options": {
+            "push": true,
+            "remote": "origin",
+            "baseBranch": "main"
+          }
+        },
         "serve": {
           "executor": "@nrwl/node:execute",
           "options": {
