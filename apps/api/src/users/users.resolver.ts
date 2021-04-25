@@ -3,14 +3,14 @@ import { UsersService } from "./users.service";
 import { User } from "./entities/user.entity";
 import { CreateUserInput } from "./dto/create-user.input";
 import { UpdateUserInput } from "./dto/update-user.input";
-import { SignUpInput } from "./dto/sign-up.input";
-import { LoginInput } from "./dto/login.input";
+import { Public } from "../auth/decorators/public.decorator";
 
 @Resolver(() => User)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   @Mutation(() => User)
+  @Public()
   createUser(@Args("createUserInput") createUserInput: CreateUserInput) {
     return this.usersService.create(createUserInput);
   }
@@ -35,13 +35,13 @@ export class UsersResolver {
     return this.usersService.remove(id);
   }
 
-  @Mutation(() => User)
-  async login(@Args("loginData") loginData: LoginInput) {
-    return await this.usersService.login(loginData);
-  }
+  // @Mutation(() => User)
+  // async login(@Args("loginData") loginData: LoginInput) {
+  //   return await this.usersService.login(loginData);
+  // }
 
-  @Mutation(() => User)
-  async signUp(@Args("signUpData") signUpData: SignUpInput) {
-    return this.usersService.signUp(signUpData);
-  }
+  // @Mutation(() => User)
+  // async signUp(@Args("signUpData") signUpData: SignUpInput) {
+  //   return this.usersService.signUp(signUpData);
+  // }
 }
