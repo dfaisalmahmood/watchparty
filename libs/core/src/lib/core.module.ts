@@ -14,9 +14,16 @@ import databaseConfig from "./config/database.config";
       load: [coreConfig, databaseConfig],
       validationSchema,
     }),
-    GraphQLModule.forRoot({
-      autoSchemaFile: true,
-      playground: true, // TODO: Change to "false" during actual production
+    GraphQLModule.forRootAsync({
+      useFactory: (config: ConfigService) => ({
+        cors: {
+          origin: config.get("origin"),
+          credentials: true,
+        },
+        autoSchemaFile: true,
+        playground: true, // TODO: Change to "false" during actual production
+      }),
+      inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync({
       useFactory: (config: ConfigService) => ({

@@ -23,11 +23,12 @@ async function bootstrap() {
     },
   );
 
-  // Helmet
+  // Security
   // @ts-ignore
   app.register(helmet, {
     contentSecurityPolicy: csp,
   });
+  app.enableCors();
 
   // Config
   const config = app.get(ConfigService);

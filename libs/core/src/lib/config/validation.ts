@@ -2,6 +2,7 @@ import Joi = require("joi");
 
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string().valid("development", "production", "test").required(),
+  ORIGIN: Joi.string().default("http://locahost:3000"),
   PORT: Joi.number().default(3000),
   // Database
   DB_HOST: Joi.string().default("localhost"),
