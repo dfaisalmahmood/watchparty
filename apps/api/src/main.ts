@@ -1,8 +1,3 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
 import { Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
@@ -12,7 +7,8 @@ import {
 } from "@nestjs/platform-fastify";
 import { WinstonModule } from "nest-winston";
 import { AppModule } from "./app/app.module";
-import { getWinstonTransports } from "./logger";
+import { getWinstonTransports, csp } from "./config";
+import * as helmet from "fastify-helmet";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -26,6 +22,12 @@ async function bootstrap() {
       }),
     },
   );
+
+  // Helmet
+  // @ts-ignore
+  app.register(helmet, {
+    contentSecurityPolicy: csp,
+  });
 
   // Config
   const config = app.get(ConfigService);
