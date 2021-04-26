@@ -8,6 +8,7 @@ import { AuthResolver } from "./auth.resolver";
 import { AuthService } from "./auth.service";
 import jwtConfig from "./config/jwt.config";
 import { JwtAuthGuard } from "./guards/jwt.guard";
+import { PassEncryptService } from "./pass-encrypt.service";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { LocalEmailStrategy } from "./strategies/local-email.strategy";
 import { LocalUsernameStrategy } from "./strategies/local-username.strategy";
@@ -31,6 +32,7 @@ import { LocalUsernameStrategy } from "./strategies/local-username.strategy";
   ],
   providers: [
     AuthService,
+    PassEncryptService,
     AuthResolver,
     LocalEmailStrategy,
     LocalUsernameStrategy,

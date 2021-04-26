@@ -14,17 +14,20 @@ import {
 } from "../users/entities/user.entity";
 import { UsersService } from "../users/users.service";
 import { AuthPayload } from "./dto/auth-payload.dto";
+import { PassEncryptService } from "./pass-encrypt.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private encryption: PassEncryptService,
   ) {}
 
   async validateUser({ username, email, pass }: validateUserProps) {
     const user = await this.usersService.findByUsernameOrEmail(username, email);
-    if (user && user.password === pass) {
+    // if (user && user.password === pass) {
+    if (user && this.encryption.verify(user.password, pass)) {
       const { password, ...result } = user;
       return result;
     }
@@ -41,6 +44,8 @@ export class AuthService {
 
   async signup(createUserData: CreateUserInput) {
     try {
+      const hashedPass = await this.encryption.hash(createUserData.password);
+      createUserData = { ...createUserData, password: hashedPass };
       const user = await this.usersService.create(createUserData);
       return await this.login(user);
     } catch (err) {
