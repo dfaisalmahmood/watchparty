@@ -10,14 +10,24 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-
+import { WinstonModule } from "nest-winston";
 import { AppModule } from "./app/app.module";
+import { getWinstonTransports } from "./logger";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter(),
+    new FastifyAdapter({
+      logger: true,
+    }),
+    {
+      logger: WinstonModule.createLogger({
+        transports: getWinstonTransports(),
+      }),
+    },
   );
+
+  // Config
   const config = app.get(ConfigService);
   const globalPrefix = "api";
   app.setGlobalPrefix(globalPrefix);
