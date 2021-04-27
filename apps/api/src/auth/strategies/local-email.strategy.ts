@@ -15,15 +15,15 @@ export class LocalEmailStrategy extends PassportStrategy(
   }
 
   async validate(email: string, password: string) {
-    const user = await this.authService.validateUser({
+    return this.authService.validateUser({
       email,
-      pass: password,
+      plainTextPassword: password,
     });
 
-    if (!user) {
-      throw new UnauthorizedException();
-    }
+    // if (!user) {
+    //   throw new UnauthorizedException();
+    // }
 
-    return user;
+    // return user;
   }
 }

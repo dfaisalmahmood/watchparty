@@ -5,16 +5,22 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { config } from "rxjs";
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtCookiesStrategy extends PassportStrategy(
+  Strategy,
+  "jwt_cookies",
+) {
   constructor(private config: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: any) => {
+          return request?.cookies?.Authentication;
+        },
+      ]),
       secretOrKey: config.get("jwt.accessTokenSecret"),
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: TokenPayload) {
     return { id: payload.sub, username: payload.username };
   }
 }

@@ -7,21 +7,25 @@ import { validationSchema } from "./config/validation";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import databaseConfig from "./config/database.config";
 import jwtConfig from "./config/jwt.config";
+import cookiesConfig from "./config/cookies.config";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [coreConfig, databaseConfig, jwtConfig],
+      load: [coreConfig, databaseConfig, jwtConfig, cookiesConfig],
       validationSchema,
     }),
     GraphQLModule.forRootAsync({
       useFactory: (config: ConfigService) => ({
+        // Accessing req, res passed to context in resolvers
+        context: ({ req, reply }) => ({ req, reply }),
         cors: {
           origin: config.get("origin"),
           credentials: true,
         },
-        autoSchemaFile: true,
+        // autoSchemaFile: true,
+        autoSchemaFile: "schema.gql",
         playground: true, // TODO: Change to "false" during actual production
       }),
       inject: [ConfigService],

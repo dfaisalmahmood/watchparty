@@ -9,6 +9,7 @@ import { WinstonModule } from "nest-winston";
 import { AppModule } from "./app/app.module";
 import { getWinstonTransports, csp } from "./config";
 import * as helmet from "fastify-helmet";
+import fastifyCookie from "fastify-cookie";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -35,6 +36,11 @@ async function bootstrap() {
   const globalPrefix = "api";
   app.setGlobalPrefix(globalPrefix);
   const port = config.get("port");
+
+  // Cookies
+  app.register(fastifyCookie, {
+    secret: config.get("cookies.secret"),
+  });
   await app.listen(port, () => {
     Logger.log("Listening at http://localhost:" + port + "/" + globalPrefix);
     Logger.log(`Running in ${config.get("environment")} mode`);

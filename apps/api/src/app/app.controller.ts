@@ -19,10 +19,10 @@ export class AppController {
     return this.appService.getData();
   }
 
-  @Post("login")
-  @UseGuards(LocalAuthGuard)
-  async login(@Req() req) {
-    // return this.authService.login(req.user);
-    return this.authService.login(req.user as Pick<User, "username" | "id">);
-  }
+  // @Post("login")
+  // @UseGuards(LocalAuthGuard)
+  // async login(@Req() req) {
+  //   // return this.authService.login(req.user);
+  //   return this.authService.login(req.user as Pick<User, "username" | "id">);
+  // }
 }

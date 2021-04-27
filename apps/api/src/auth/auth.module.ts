@@ -8,7 +8,8 @@ import { AuthResolver } from "./auth.resolver";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt.guard";
 import { PassEncryptService } from "./pass-encrypt.service";
-import { JwtStrategy } from "./strategies/jwt.strategy";
+import { JwtHeaderStrategy } from "./strategies/jwt-header.strategy";
+import { JwtCookiesStrategy } from "./strategies/jwt-cookies.strategy";
 import { LocalEmailStrategy } from "./strategies/local-email.strategy";
 import { LocalUsernameStrategy } from "./strategies/local-username.strategy";
 
@@ -23,10 +24,6 @@ import { LocalUsernameStrategy } from "./strategies/local-username.strategy";
       }),
       inject: [ConfigService],
     }),
-    // JwtModule.register({
-    //   secret: "dfasdfsadf34",
-    //   signOptions: { expiresIn: "600s" },
-    // }),
   ],
   providers: [
     AuthService,
@@ -34,7 +31,8 @@ import { LocalUsernameStrategy } from "./strategies/local-username.strategy";
     AuthResolver,
     LocalEmailStrategy,
     LocalUsernameStrategy,
-    JwtStrategy,
+    JwtHeaderStrategy,
+    JwtCookiesStrategy,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

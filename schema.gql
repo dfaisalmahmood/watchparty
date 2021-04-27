@@ -1,0 +1,65 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  id: String!
+  email: String!
+  username: String!
+}
+
+type AuthUserPayload {
+  id: String!
+  email: String!
+  username: String!
+}
+
+type AuthPayload {
+  user: AuthUserPayload!
+  accessToken: String!
+}
+
+type Query {
+  uptime: Float!
+  users: [User!]!
+  user(id: Int!): User!
+
+  """Returns full user info (without password)."""
+  profile: User!
+}
+
+type Mutation {
+  createUser(createUserInput: CreateUserInput!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  removeUser(id: Int!): User!
+
+  """
+  Logs user in, attaches cookie to client as HttpOnly, returns user info and JWT access_token.
+  """
+  login(password: String!, email: String, username: String): AuthPayload!
+
+  """Removes cookie from client to prevent further access."""
+  logout: Boolean!
+
+  """Creates new user. Email and Username have to be unique."""
+  signup(signupData: SignUpInput!): AuthPayload!
+}
+
+input CreateUserInput {
+  email: String!
+  username: String!
+  password: String!
+}
+
+input UpdateUserInput {
+  email: String
+  username: String
+  password: String
+  id: Int!
+}
+
+input SignUpInput {
+  username: String!
+  email: String!
+  password: String!
+}

@@ -5,6 +5,7 @@ import {
   Injectable,
   InternalServerErrorException,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { PostgresErrorCodes } from "@watchparty/core";
 import { CreateUserInput } from "../users/dto/create-user.input";
@@ -14,32 +15,71 @@ import {
   USERNAME_CONSTRAINT,
 } from "../users/entities/user.entity";
 import { UsersService } from "../users/users.service";
-import { AuthPayload } from "./dto/auth-payload.dto";
+import { AuthPayload, AuthUserPayload } from "./dto/auth-payload.dto";
 import { PassEncryptService } from "./pass-encrypt.service";
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
-    private encryption: PassEncryptService,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+    private readonly encryption: PassEncryptService,
+    private readonly config: ConfigService,
   ) {}
 
-  async validateUser({ username, email, pass }: validateUserProps) {
-    const user = await this.usersService.findByUsernameOrEmail(username, email);
-    // if (user && user.password === pass) {
-    if (user && this.encryption.verify(user.password, pass)) {
-      const { password, ...result } = user;
-      return result;
-    }
-    return null;
+  getCookieWithJwtToken(tokenString: string) {
+    return `Authentication=${tokenString}; HttpOnly; Path=/; Max-Age=${this.config.get(
+      "jwt.accessTokenExpirationTime",
+    )}`;
   }
 
-  async login(user: Partial<User>): Promise<AuthPayload> {
-    const payload = { username: user.username, sub: user.id };
+  getCookieForLogout() {
+    return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
+  }
+
+  async validateUser({
+    username,
+    email,
+    plainTextPassword,
+  }: validateUserProps): Promise<Partial<User>> {
+    try {
+      const user = await this.usersService.findByUsernameOrEmail(
+        username,
+        email,
+      );
+      await this.verifyPassword(user.password, plainTextPassword);
+      const { password, ...userWithoutPass } = user;
+      return userWithoutPass;
+    } catch (error) {
+      throw new HttpException(
+        "Wrong credentials provided",
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+  }
+
+  private async verifyPassword(
+    hashedPassword: string,
+    plainTextPassword: string,
+  ) {
+    const isPasswordMatching = await this.encryption.verify(
+      hashedPassword,
+      plainTextPassword,
+    );
+    if (!isPasswordMatching) {
+      throw new HttpException(
+        "Wrong credentials provided",
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+  }
+
+  async login(user: AuthUserPayload): Promise<AuthPayload> {
+    const payload: TokenPayload = { username: user.username, sub: user.id };
+    const tokenString = this.jwtService.sign(payload);
     return {
-      username: user.username,
-      accessToken: this.jwtService.sign(payload),
+      user,
+      accessToken: tokenString,
     };
   }
 
@@ -80,5 +120,5 @@ export class AuthService {
 type validateUserProps = {
   username?: string;
   email?: string;
-  pass: string;
+  plainTextPassword: string;
 };
