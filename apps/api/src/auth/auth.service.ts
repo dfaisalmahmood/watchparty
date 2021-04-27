@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { PostgresErrorCodes } from "@watchparty/core";
 import { CreateUserInput } from "../users/dto/create-user.input";
 import {
   EMAIL_CONSTRAINT,
@@ -49,7 +50,7 @@ export class AuthService {
       const user = await this.usersService.create(createUserData);
       return await this.login(user);
     } catch (err) {
-      if (err.code === "23505") {
+      if (err.code === PostgresErrorCodes.UniqueViolation) {
         let errMsg: string;
         if (err.constraint === EMAIL_CONSTRAINT) {
           errMsg = "Email already exists.";

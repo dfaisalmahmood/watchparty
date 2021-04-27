@@ -6,7 +6,6 @@ import { PassportModule } from "@nestjs/passport";
 import { UsersModule } from "../users/users.module";
 import { AuthResolver } from "./auth.resolver";
 import { AuthService } from "./auth.service";
-import jwtConfig from "./config/jwt.config";
 import { JwtAuthGuard } from "./guards/jwt.guard";
 import { PassEncryptService } from "./pass-encrypt.service";
 import { JwtStrategy } from "./strategies/jwt.strategy";
@@ -19,8 +18,8 @@ import { LocalUsernameStrategy } from "./strategies/local-username.strategy";
     PassportModule,
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => ({
-        secret: config.get("jwt.secret"),
-        signOptions: { expiresIn: config.get("jwt.expiresIn") },
+        secret: config.get("jwt.accessTokenSecret"),
+        signOptions: { expiresIn: config.get("jwt.accessTokenExpirationTime") },
       }),
       inject: [ConfigService],
     }),
@@ -28,7 +27,6 @@ import { LocalUsernameStrategy } from "./strategies/local-username.strategy";
     //   secret: "dfasdfsadf34",
     //   signOptions: { expiresIn: "600s" },
     // }),
-    ConfigModule.forFeature(jwtConfig),
   ],
   providers: [
     AuthService,

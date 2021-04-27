@@ -6,12 +6,13 @@ import { CoreResovler } from "./config/core.resolver";
 import { validationSchema } from "./config/validation";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import databaseConfig from "./config/database.config";
+import jwtConfig from "./config/jwt.config";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [coreConfig, databaseConfig],
+      load: [coreConfig, databaseConfig, jwtConfig],
       validationSchema,
     }),
     GraphQLModule.forRootAsync({
