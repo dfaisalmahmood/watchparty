@@ -7,11 +7,12 @@ import { UsersModule } from "../users/users.module";
 import { AuthResolver } from "./auth.resolver";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt.guard";
-import { PassEncryptService } from "./pass-encrypt.service";
 import { JwtHeaderStrategy } from "./strategies/jwt-header.strategy";
 import { JwtCookiesStrategy } from "./strategies/jwt-cookies.strategy";
 import { LocalEmailStrategy } from "./strategies/local-email.strategy";
 import { LocalUsernameStrategy } from "./strategies/local-username.strategy";
+import { JwtRefreshTokenCookiesStrategy } from "./strategies/jwt-refresh-token-cookies.strategy";
+import { JwtRefreshTokenBodyStrategy } from "./strategies/jwt-refresh-token-body.strategy";
 
 @Module({
   imports: [
@@ -27,12 +28,13 @@ import { LocalUsernameStrategy } from "./strategies/local-username.strategy";
   ],
   providers: [
     AuthService,
-    PassEncryptService,
     AuthResolver,
     LocalEmailStrategy,
     LocalUsernameStrategy,
     JwtHeaderStrategy,
     JwtCookiesStrategy,
+    JwtRefreshTokenBodyStrategy,
+    JwtRefreshTokenCookiesStrategy,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

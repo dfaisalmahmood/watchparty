@@ -2,12 +2,11 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { config } from "rxjs";
 
 @Injectable()
 export class JwtCookiesStrategy extends PassportStrategy(
   Strategy,
-  "jwt_cookies",
+  "jwt-cookies",
 ) {
   constructor(private config: ConfigService) {
     super({
@@ -16,6 +15,7 @@ export class JwtCookiesStrategy extends PassportStrategy(
           return request?.cookies?.Authentication;
         },
       ]),
+      ignoreExpiration: false,
       secretOrKey: config.get("jwt.accessTokenSecret"),
     });
   }

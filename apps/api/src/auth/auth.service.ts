@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { PostgresErrorCodes } from "@watchparty/core";
+import { PassEncryptService, PostgresErrorCodes } from "@watchparty/core";
 import { CreateUserInput } from "../users/dto/create-user.input";
 import {
   EMAIL_CONSTRAINT,
@@ -15,8 +15,11 @@ import {
   USERNAME_CONSTRAINT,
 } from "../users/entities/user.entity";
 import { UsersService } from "../users/users.service";
-import { AuthPayload, AuthUserPayload } from "./dto/auth-payload.dto";
-import { PassEncryptService } from "./pass-encrypt.service";
+import {
+  AuthPayload,
+  AuthUserPayload,
+  RefreshPayload,
+} from "./dto/auth-payload.dto";
 
 @Injectable()
 export class AuthService {
@@ -27,14 +30,41 @@ export class AuthService {
     private readonly config: ConfigService,
   ) {}
 
-  getCookieWithJwtToken(tokenString: string) {
-    return `Authentication=${tokenString}; HttpOnly; Path=/; Max-Age=${this.config.get(
+  getCookieWithJwtAccessToken(user: AuthUserPayload) {
+    const payload = this.getTokenPayload(user);
+    const token = this.jwtService.sign(payload, {
+      secret: this.config.get("jwt.accessTokenSecret"),
+      expiresIn: `${this.config.get("jwt.accessTokenExpirationTime")}s`,
+    });
+    const cookie = `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.config.get(
       "jwt.accessTokenExpirationTime",
     )}`;
+    return {
+      cookie,
+      token,
+    };
   }
 
-  getCookieForLogout() {
-    return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
+  getCookieWithJwtRefreshToken(user: AuthUserPayload) {
+    const payload = this.getTokenPayload(user);
+    const token = this.jwtService.sign(payload, {
+      secret: this.config.get("jwt.refreshTokenSecret"),
+      expiresIn: `${this.config.get("jwt.refreshTokenExpirationTime")}s`,
+    });
+    const cookie = `Refresh=${token}; HttpOnly; Path=/; Max-Age=${this.config.get(
+      "jwt.refreshTokenExpirationTime",
+    )}`;
+    return {
+      cookie,
+      token,
+    };
+  }
+
+  getCookiesForLogout() {
+    return [
+      `Authentication=; HttpOnly; Path=/; Max-Age=0`,
+      `Refresh=; HttpOnly; Path=/; Max-Age=0`,
+    ];
   }
 
   async validateUser({
@@ -74,12 +104,49 @@ export class AuthService {
     }
   }
 
-  async login(user: AuthUserPayload): Promise<AuthPayload> {
-    const payload: TokenPayload = { username: user.username, sub: user.id };
-    const tokenString = this.jwtService.sign(payload);
+  private getTokenPayload(user: AuthUserPayload): TokenPayload {
+    return { username: user.username, sub: user.id };
+  }
+
+  async login(user: AuthUserPayload): Promise<LoginReturn> {
+    // const payload: TokenPayload = this.getTokenPayload(user);
+    // const tokenString = this.jwtService.sign(payload);
+    const {
+      cookie: accessTokenCookie,
+      token: accessToken,
+    } = this.getCookieWithJwtAccessToken(user);
+    const {
+      cookie: refreshTokenCookie,
+      token: refreshToken,
+    } = this.getCookieWithJwtRefreshToken(user);
+
+    // Register refreshToken in DB
+    await this.usersService.setCurrentRefreshToken(refreshToken, user.id);
+
     return {
-      user,
-      accessToken: tokenString,
+      body: {
+        user,
+        accessToken,
+        refreshToken,
+      },
+      accessTokenCookie,
+      refreshTokenCookie,
+    };
+  }
+
+  async logout(user: AuthUserPayload) {
+    await this.usersService.removeRefreshToken(user.id);
+    return true;
+  }
+
+  refresh(user: AuthUserPayload): RefreshReturn {
+    const {
+      cookie: accessTokenCookie,
+      token: accessToken,
+    } = this.getCookieWithJwtAccessToken(user);
+    return {
+      body: { user, accessToken },
+      accessTokenCookie,
     };
   }
 
@@ -121,4 +188,15 @@ type validateUserProps = {
   username?: string;
   email?: string;
   plainTextPassword: string;
+};
+
+type LoginReturn = {
+  body: AuthPayload;
+  accessTokenCookie: string;
+  refreshTokenCookie: string;
+};
+
+type RefreshReturn = {
+  body: RefreshPayload;
+  accessTokenCookie: string;
 };

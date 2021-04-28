@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Global, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { GraphQLModule } from "@nestjs/graphql";
 import coreConfig from "./config/core.config";
@@ -8,7 +8,9 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import databaseConfig from "./config/database.config";
 import jwtConfig from "./config/jwt.config";
 import cookiesConfig from "./config/cookies.config";
+import { PassEncryptService } from "./pass-encrypt.service";
 
+@Global()
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -46,7 +48,7 @@ import cookiesConfig from "./config/cookies.config";
     }),
   ],
   controllers: [],
-  providers: [CoreResovler],
-  exports: [],
+  providers: [CoreResovler, PassEncryptService],
+  exports: [PassEncryptService],
 })
 export class CoreModule {}
