@@ -13,9 +13,12 @@ import { LocalEmailStrategy } from "./strategies/local-email.strategy";
 import { LocalUsernameStrategy } from "./strategies/local-username.strategy";
 import { JwtRefreshTokenCookiesStrategy } from "./strategies/jwt-refresh-token-cookies.strategy";
 import { JwtRefreshTokenBodyStrategy } from "./strategies/jwt-refresh-token-body.strategy";
+import { MailModule } from "../mail/mail.module";
+import { AuthController } from "./auth.controller";
 
 @Module({
   imports: [
+    MailModule,
     UsersModule,
     PassportModule,
     JwtModule.registerAsync({
@@ -26,6 +29,7 @@ import { JwtRefreshTokenBodyStrategy } from "./strategies/jwt-refresh-token-body
       inject: [ConfigService],
     }),
   ],
+  controllers: [AuthController],
   providers: [
     AuthService,
     AuthResolver,

@@ -4,10 +4,12 @@ import {
   HttpStatus,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { PassEncryptService, PostgresErrorCodes } from "@watchparty/core";
+import { MailService } from "../mail/mail.service";
 import { CreateUserInput } from "../users/dto/create-user.input";
 import {
   EMAIL_CONSTRAINT,
@@ -20,14 +22,17 @@ import {
   AuthUserPayload,
   RefreshPayload,
 } from "./dto/auth-payload.dto";
+import base64url from "base64url";
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(this.constructor.name);
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly encryption: PassEncryptService,
     private readonly config: ConfigService,
+    private readonly mailService: MailService,
   ) {}
 
   getCookieWithJwtAccessToken(user: AuthUserPayload) {
@@ -155,6 +160,16 @@ export class AuthService {
       const hashedPass = await this.encryption.hash(createUserData.password);
       createUserData = { ...createUserData, password: hashedPass };
       const user = await this.usersService.create(createUserData);
+
+      // Confirm token
+      const tokenPayload = this.getTokenPayload(user as AuthUserPayload);
+      const confirmToken = this.jwtService.sign(tokenPayload, {
+        secret: this.config.get("jwt.confirmTokenSecre"),
+        expiresIn: this.config.get("jwt.confirmTokenExpirationTime"),
+      });
+      const encodedToken = base64url.encode(confirmToken, "utf8");
+      this.mailService.sendConfirmationEmail(user, encodedToken);
+      // TODO: Comment the following and allow login after confirm
       return await this.login(user);
     } catch (err) {
       if (err.code === PostgresErrorCodes.UniqueViolation) {
@@ -174,6 +189,7 @@ export class AuthService {
           );
         }
       }
+      this.logger.error(`Unexpected error: ${err.message}`, err.stack);
       throw new InternalServerErrorException();
     }
   }

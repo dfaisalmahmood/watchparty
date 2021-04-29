@@ -2,6 +2,7 @@ import { Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { FastifyRequest } from "fastify";
 import { AuthService } from "../auth/auth.service";
+import { Public } from "../auth/decorators/public.decorator";
 import { LocalAuthGuard } from "../auth/guards/local-auth.guard";
 import { User } from "../users/entities/user.entity";
 
@@ -15,6 +16,7 @@ export class AppController {
   ) {}
 
   @Get()
+  @Public()
   getData() {
     return this.appService.getData();
   }

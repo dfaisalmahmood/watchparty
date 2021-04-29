@@ -9,13 +9,14 @@ import databaseConfig from "./config/database.config";
 import jwtConfig from "./config/jwt.config";
 import cookiesConfig from "./config/cookies.config";
 import { PassEncryptService } from "./pass-encrypt.service";
+import mailConfig from "./config/mail.config";
 
 @Global()
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [coreConfig, databaseConfig, jwtConfig, cookiesConfig],
+      load: [coreConfig, databaseConfig, jwtConfig, cookiesConfig, mailConfig],
       validationSchema,
     }),
     GraphQLModule.forRootAsync({
