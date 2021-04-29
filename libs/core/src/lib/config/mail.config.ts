@@ -6,7 +6,7 @@ export default registerAs("mail", () => ({
   secure: process.env.MAIL_SECURE === "true" ? true : false,
   user: process.env.MAIL_USER || "root",
   pass: process.env.MAIL_PASS || "root",
-  from: process.env.MAIL_FROM || "admin@watchparty.com",
+  from: process.env.MAIL_FROM || "no-reply@watchparty.com",
   queueHost: process.env.MAIL_QUEUE_HOST || "127.0.0.1",
   queuePort: parseInt(process.env.MAIL_QUEUE_PORT || "6379", 10),
   live: process.env.MAIL_LIVE === "true" ? true : false,

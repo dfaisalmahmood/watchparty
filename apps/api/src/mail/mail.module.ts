@@ -4,7 +4,6 @@ import { ConfigService } from "@nestjs/config";
 import { BullModule } from "@nestjs/bull";
 // @ts-ignore
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
-import { config } from "rxjs";
 import { queueNames } from "@watchparty/core";
 import { MailService } from "./mail.service";
 import { MailProcessor } from "./mail.processor";
@@ -27,9 +26,8 @@ import { MailProcessor } from "./mail.processor";
           from: config.get("mail.from"),
         },
         template: {
-          // dir: __dirname + "./assets/mail-templates/",
-          dir:
-            "D:\\Projects\\watchparty\\dist\\apps\\api\\assets\\mail-templates",
+          dir: __dirname + "/assets/mail-templates/",
+          // dir: "D:/Projects/watchparty/dist/apps/api/assets/mail-templates",
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,

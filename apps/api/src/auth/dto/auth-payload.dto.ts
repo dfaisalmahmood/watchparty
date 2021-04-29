@@ -6,6 +6,7 @@ export class AuthUserPayload extends PickType(User, [
   "id",
   "username",
   "email",
+  "accountStatus",
 ] as const) {}
 
 @ObjectType()

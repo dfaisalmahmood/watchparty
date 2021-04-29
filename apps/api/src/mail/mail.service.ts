@@ -3,7 +3,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { queueNames } from "@watchparty/core";
 import { Queue } from "bull";
 import { User } from "../users/entities/user.entity";
-import { mailTypes } from "./constants";
+import { MailTypes } from "./mail-types.enum";
 
 @Injectable()
 export class MailService {
@@ -17,7 +17,7 @@ export class MailService {
   /** Send email confirmation link to new user account. */
   async sendConfirmationEmail(user: User, code: string): Promise<boolean> {
     try {
-      await this.mailQueue.add(mailTypes.CONFIRMATION, {
+      await this.mailQueue.add(MailTypes.Verification, {
         user,
         code,
       });

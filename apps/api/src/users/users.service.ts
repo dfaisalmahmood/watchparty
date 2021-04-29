@@ -13,8 +13,8 @@ export class UsersService {
     private readonly encrypt: PassEncryptService,
   ) {}
 
-  create(createUserInput: CreateUserInput) {
-    return this.userRepo.create(createUserInput).save();
+  create(createdUser: Partial<User>) {
+    return this.userRepo.create(createdUser).save();
   }
 
   findAll() {
@@ -25,8 +25,10 @@ export class UsersService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserInput: UpdateUserInput) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updatedUser: Partial<User>) {
+    return await this.userRepo.update(id, {
+      ...updatedUser,
+    });
   }
 
   remove(id: number) {

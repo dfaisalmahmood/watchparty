@@ -22,14 +22,16 @@ import {
 import { LoginInput } from "./dto/login.input";
 import { SignUpInput } from "./dto/sign-up.input";
 import { JwtRefreshGuard } from "./guards/jwt-refresh.guard";
+import { JwtVerifyAccountGuard } from "./guards/jwt-verify.guard";
 import { JwtAuthGuard } from "./guards/jwt.guard";
 import { LocalAuthGuard } from "./guards/local-auth.guard";
+import { JwtHeaderVerifyStrategy } from "./strategies/jwt-header-verify.strategy";
 
 @Resolver()
 export class AuthResolver {
   constructor(private authService: AuthService) {}
 
-  @Mutation(() => AuthPayload, {
+  @Mutation(() => AuthUserPayload, {
     name: "signup",
     description: "Creates new user. Email and Username have to be unique.",
   })
@@ -38,13 +40,14 @@ export class AuthResolver {
     @Args("signupData") signupData: SignUpInput,
     @Context() context,
   ) {
-    const {
-      body,
-      accessTokenCookie,
-      refreshTokenCookie,
-    } = await this.authService.signup(signupData);
-    context.reply.header("Set-Cookie", [accessTokenCookie, refreshTokenCookie]);
-    return body;
+    // const {
+    //   body,
+    //   accessTokenCookie,
+    //   refreshTokenCookie,
+    // } = await this.authService.signup(signupData);
+    // context.reply.header("Set-Cookie", [accessTokenCookie, refreshTokenCookie]);
+    // return body;
+    return await this.authService.signup(signupData);
   }
 
   @Mutation(() => AuthPayload, {
@@ -107,5 +110,22 @@ export class AuthResolver {
   })
   async profile(@CurrentUser() user: User) {
     return await this.authService.getProfile(user.id);
+  }
+
+  @Mutation(() => AuthPayload, {
+    name: "verify",
+    description:
+      "Verification post-signup. Link sent to email contains JWT token containing user info.",
+  })
+  @Public()
+  @UseGuards(JwtVerifyAccountGuard)
+  async verifyAccount(@CurrentUser() user: User, @Context() context) {
+    const {
+      body,
+      accessTokenCookie,
+      refreshTokenCookie,
+    } = await this.authService.verifyAccount(user);
+    context.reply.header("Set-Cookie", [accessTokenCookie, refreshTokenCookie]);
+    return body;
   }
 }

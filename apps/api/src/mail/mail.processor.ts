@@ -13,7 +13,7 @@ import { Job } from "bull";
 import { plainToClass } from "class-transformer";
 import { config } from "winston";
 import { User } from "../users/entities/user.entity";
-import { mailTypes } from "./constants";
+import { MailTypes } from "./mail-types.enum";
 
 @Processor(queueNames.MAIL_QUEUE)
 export class MailProcessor {
@@ -50,13 +50,13 @@ export class MailProcessor {
     );
   }
 
-  @Process(mailTypes.CONFIRMATION)
+  @Process(MailTypes.Verification)
   async sendWelcomeEmail(job: Job<{ user: User; code: string }>): Promise<any> {
     this.logger.log(`Sending confirmation email to ${job.data.user.email}`);
 
-    const url = `${this.config.get("origin")}/api/auth/${
+    const url = `${this.config.get("clientOrigin")}/auth/verify?token=${
       job.data.code
-    }/confirm`;
+    }`;
 
     // if (!this.config.get<boolean>("mail.live")) {
     //   return "SENT MOCK CONFIRMATION EMAIL";
@@ -64,7 +64,7 @@ export class MailProcessor {
 
     try {
       const result = await this.mailerService.sendMail({
-        template: `./${mailTypes.CONFIRMATION}`,
+        template: `./${MailTypes.Verification}`,
         context: {
           ...plainToClass(User, job.data.user),
           url: url,

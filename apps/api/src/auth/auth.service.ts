@@ -5,6 +5,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
@@ -23,6 +24,11 @@ import {
   RefreshPayload,
 } from "./dto/auth-payload.dto";
 import base64url from "base64url";
+import { AccountStatus } from "../users/entities/account-status.enum";
+import {
+  TokenPayload,
+  VerifyAccountTokenPayload,
+} from "./token-payload.interface";
 
 @Injectable()
 export class AuthService {
@@ -83,6 +89,9 @@ export class AuthService {
         email,
       );
       await this.verifyPassword(user.password, plainTextPassword);
+      if (user.accountStatus !== AccountStatus.Verified) {
+        throw new UnauthorizedException();
+      }
       const { password, ...userWithoutPass } = user;
       return userWithoutPass;
     } catch (error) {
@@ -110,7 +119,22 @@ export class AuthService {
   }
 
   private getTokenPayload(user: AuthUserPayload): TokenPayload {
-    return { username: user.username, sub: user.id };
+    return {
+      sub: user.id,
+      username: user.username,
+      accountStatus: user.accountStatus,
+    };
+  }
+
+  private getVerifyAccountTokenPayload(
+    user: AuthUserPayload,
+  ): VerifyAccountTokenPayload {
+    return {
+      sub: user.id,
+      username: user.username,
+      email: user.email,
+      accountStatus: user.accountStatus,
+    };
   }
 
   async login(user: AuthUserPayload): Promise<LoginReturn> {
@@ -159,18 +183,24 @@ export class AuthService {
     try {
       const hashedPass = await this.encryption.hash(createUserData.password);
       createUserData = { ...createUserData, password: hashedPass };
-      const user = await this.usersService.create(createUserData);
+      const user = await this.usersService.create({
+        ...createUserData,
+        accountStatus: AccountStatus.Unverified,
+      });
 
       // Confirm token
-      const tokenPayload = this.getTokenPayload(user as AuthUserPayload);
+      const tokenPayload = this.getVerifyAccountTokenPayload(
+        user as AuthUserPayload,
+      );
       const confirmToken = this.jwtService.sign(tokenPayload, {
-        secret: this.config.get("jwt.confirmTokenSecre"),
+        secret: this.config.get("jwt.confirmTokenSecret"),
         expiresIn: this.config.get("jwt.confirmTokenExpirationTime"),
       });
-      const encodedToken = base64url.encode(confirmToken, "utf8");
-      this.mailService.sendConfirmationEmail(user, encodedToken);
+      // const encodedToken = base64url.fromBase64(confirmToken);
+      this.mailService.sendConfirmationEmail(user, confirmToken);
       // TODO: Comment the following and allow login after confirm
-      return await this.login(user);
+      // return await this.login(user);
+      return user as AuthUserPayload;
     } catch (err) {
       if (err.code === PostgresErrorCodes.UniqueViolation) {
         let errMsg: string;
@@ -192,6 +222,13 @@ export class AuthService {
       this.logger.error(`Unexpected error: ${err.message}`, err.stack);
       throw new InternalServerErrorException();
     }
+  }
+
+  async verifyAccount(user: User) {
+    const updatedUser = user;
+    updatedUser.accountStatus = AccountStatus.Verified;
+    await this.usersService.update(user.id, updatedUser);
+    return await this.login(user as AuthUserPayload);
   }
 
   async getProfile(userId: string) {

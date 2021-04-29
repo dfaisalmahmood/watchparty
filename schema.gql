@@ -6,12 +6,20 @@ type User {
   id: String!
   email: String!
   username: String!
+  accountStatus: AccountStatus
+}
+
+enum AccountStatus {
+  Unverified
+  Verified
+  Banned
 }
 
 type AuthUserPayload {
   id: String!
   email: String!
   username: String!
+  accountStatus: AccountStatus
 }
 
 type AuthPayload {
@@ -40,7 +48,7 @@ type Mutation {
   removeUser(id: Int!): User!
 
   """Creates new user. Email and Username have to be unique."""
-  signup(signupData: SignUpInput!): AuthPayload!
+  signup(signupData: SignUpInput!): AuthUserPayload!
 
   """
   Logs user in, attaches cookie to client as HttpOnly, returns user info and JWT access_token.
@@ -52,6 +60,11 @@ type Mutation {
 
   """Refreshes access token using refreshToken"""
   refresh(refreshToken: String): RefreshPayload!
+
+  """
+  Verification post-signup. Link sent to email contains JWT token containing user info.
+  """
+  verify: AuthPayload!
 }
 
 input CreateUserInput {
@@ -64,7 +77,7 @@ input UpdateUserInput {
   email: String
   username: String
   password: String
-  id: Int!
+  id: String!
 }
 
 input SignUpInput {

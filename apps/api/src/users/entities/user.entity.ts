@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Exclude } from "class-transformer";
+import { AccountStatus } from "./account-status.enum";
 
 export const EMAIL_CONSTRAINT = "UQ_user_email";
 export const USERNAME_CONSTRAINT = "UQ_user_username";
@@ -34,4 +35,13 @@ export class User extends BaseEntity {
 
   @Column("text", { nullable: true })
   currentHashedRefreshToken: string;
+
+  @Column({
+    type: "enum",
+    enum: AccountStatus,
+    default: AccountStatus.Unverified,
+    nullable: false,
+  })
+  @Field((type) => AccountStatus, { nullable: true })
+  accountStatus: AccountStatus;
 }

@@ -15,6 +15,7 @@ import { JwtRefreshTokenCookiesStrategy } from "./strategies/jwt-refresh-token-c
 import { JwtRefreshTokenBodyStrategy } from "./strategies/jwt-refresh-token-body.strategy";
 import { MailModule } from "../mail/mail.module";
 import { AuthController } from "./auth.controller";
+import { JwtHeaderVerifyStrategy } from "./strategies/jwt-header-verify.strategy";
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AuthController } from "./auth.controller";
     JwtCookiesStrategy,
     JwtRefreshTokenBodyStrategy,
     JwtRefreshTokenCookiesStrategy,
+    JwtHeaderVerifyStrategy,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
