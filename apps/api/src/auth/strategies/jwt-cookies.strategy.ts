@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { AccountStatus } from "../../users/entities/account-status.enum";
-import { TokenPayload } from "../token-payload.interface";
+import { TokenPayload, UserInReq } from "../token-payload.interface";
 
 @Injectable()
 export class JwtCookiesStrategy extends PassportStrategy(
@@ -22,12 +22,13 @@ export class JwtCookiesStrategy extends PassportStrategy(
     });
   }
 
-  validate(payload: TokenPayload) {
+  validate(payload: TokenPayload): UserInReq {
     if (payload.accountStatus === AccountStatus.Verified) {
       return {
         id: payload.sub,
         username: payload.username,
         accountStatus: payload.accountStatus,
+        accountRole: payload.accountRole,
       };
     }
   }

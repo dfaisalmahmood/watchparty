@@ -18,6 +18,7 @@ import {
   AuthPayload,
   AuthUserPayload,
   RefreshPayload,
+  VerifyUserPayload,
 } from "./dto/auth-payload.dto";
 import { LoginInput } from "./dto/login.input";
 import { SignUpInput } from "./dto/sign-up.input";
@@ -26,12 +27,13 @@ import { JwtVerifyAccountGuard } from "./guards/jwt-verify.guard";
 import { JwtAuthGuard } from "./guards/jwt.guard";
 import { LocalAuthGuard } from "./guards/local-auth.guard";
 import { JwtHeaderVerifyStrategy } from "./strategies/jwt-header-verify.strategy";
+import { UserInReq } from "./token-payload.interface";
 
 @Resolver()
 export class AuthResolver {
   constructor(private authService: AuthService) {}
 
-  @Mutation(() => AuthUserPayload, {
+  @Mutation(() => VerifyUserPayload, {
     name: "signup",
     description: "Creates new user. Email and Username have to be unique.",
   })
@@ -63,7 +65,7 @@ export class AuthResolver {
     @Args("password") password: string,
     // @Context() context: GraphQLExecutionContext,
     @Context() context,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserInReq,
   ) {
     const {
       body,
@@ -92,7 +94,7 @@ export class AuthResolver {
   @Public()
   @UseGuards(JwtRefreshGuard)
   async refresh(
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserInReq,
     @Context() context,
     @Args("refreshToken", { nullable: true }) refreshToken?: string,
   ) {
@@ -108,7 +110,7 @@ export class AuthResolver {
     name: "profile",
     description: "Returns full user info (without password).",
   })
-  async profile(@CurrentUser() user: User) {
+  async profile(@CurrentUser() user: UserInReq) {
     return await this.authService.getProfile(user.id);
   }
 
@@ -119,7 +121,7 @@ export class AuthResolver {
   })
   @Public()
   @UseGuards(JwtVerifyAccountGuard)
-  async verifyAccount(@CurrentUser() user: User, @Context() context) {
+  async verifyAccount(@CurrentUser() user: UserInReq, @Context() context) {
     const {
       body,
       accessTokenCookie,

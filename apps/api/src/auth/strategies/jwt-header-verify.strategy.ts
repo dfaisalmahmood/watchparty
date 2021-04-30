@@ -5,6 +5,7 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { AccountStatus } from "../../users/entities/account-status.enum";
 import {
   TokenPayload,
+  UserInReq,
   VerifyAccountTokenPayload,
 } from "../token-payload.interface";
 
@@ -21,12 +22,13 @@ export class JwtHeaderVerifyStrategy extends PassportStrategy(
     });
   }
 
-  validate(payload: VerifyAccountTokenPayload) {
+  validate(payload: VerifyAccountTokenPayload): UserInReq {
     return {
       id: payload.sub,
       username: payload.username,
       email: payload.email,
       accountStatus: payload.accountStatus,
+      accountRole: payload.accountRole,
     };
   }
 }

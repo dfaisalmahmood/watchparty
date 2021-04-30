@@ -22,13 +22,16 @@ import {
   AuthPayload,
   AuthUserPayload,
   RefreshPayload,
+  VerifyUserPayload,
 } from "./dto/auth-payload.dto";
 import base64url from "base64url";
 import { AccountStatus } from "../users/entities/account-status.enum";
 import {
   TokenPayload,
+  UserInReq,
   VerifyAccountTokenPayload,
 } from "./token-payload.interface";
+import { AccountRole } from "../users/entities/accountRole.enum";
 
 @Injectable()
 export class AuthService {
@@ -123,21 +126,23 @@ export class AuthService {
       sub: user.id,
       username: user.username,
       accountStatus: user.accountStatus,
+      accountRole: user.accountRole,
     };
   }
 
   private getVerifyAccountTokenPayload(
-    user: AuthUserPayload,
+    user: VerifyUserPayload,
   ): VerifyAccountTokenPayload {
     return {
       sub: user.id,
       username: user.username,
       email: user.email,
       accountStatus: user.accountStatus,
+      accountRole: user.accountRole,
     };
   }
 
-  async login(user: AuthUserPayload): Promise<LoginReturn> {
+  async login(user: AuthUserPayload | VerifyUserPayload): Promise<LoginReturn> {
     // const payload: TokenPayload = this.getTokenPayload(user);
     // const tokenString = this.jwtService.sign(payload);
     const {
@@ -183,14 +188,19 @@ export class AuthService {
     try {
       const hashedPass = await this.encryption.hash(createUserData.password);
       createUserData = { ...createUserData, password: hashedPass };
+      const accountRole =
+        createUserData.email === this.config.get("superAdmin")
+          ? AccountRole.SuperAdmin
+          : AccountRole.User;
       const user = await this.usersService.create({
         ...createUserData,
+        accountRole,
         accountStatus: AccountStatus.Unverified,
       });
 
       // Confirm token
       const tokenPayload = this.getVerifyAccountTokenPayload(
-        user as AuthUserPayload,
+        user as VerifyUserPayload,
       );
       const confirmToken = this.jwtService.sign(tokenPayload, {
         secret: this.config.get("jwt.confirmTokenSecret"),
@@ -198,9 +208,7 @@ export class AuthService {
       });
       // const encodedToken = base64url.fromBase64(confirmToken);
       this.mailService.sendConfirmationEmail(user, confirmToken);
-      // TODO: Comment the following and allow login after confirm
-      // return await this.login(user);
-      return user as AuthUserPayload;
+      return user as VerifyUserPayload;
     } catch (err) {
       if (err.code === PostgresErrorCodes.UniqueViolation) {
         let errMsg: string;
@@ -224,11 +232,11 @@ export class AuthService {
     }
   }
 
-  async verifyAccount(user: User) {
+  async verifyAccount(user: UserInReq) {
     const updatedUser = user;
     updatedUser.accountStatus = AccountStatus.Verified;
     await this.usersService.update(user.id, updatedUser);
-    return await this.login(user as AuthUserPayload);
+    return await this.login(user as VerifyUserPayload);
   }
 
   async getProfile(userId: string) {

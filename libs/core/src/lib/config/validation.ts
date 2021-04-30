@@ -6,6 +6,7 @@ export const validationSchema = Joi.object({
   CLIENT_ORIGIN: Joi.string().default("http://locahost:8080"),
   NODE_ENV: Joi.string().valid("development", "production", "test").required(),
   PORT: Joi.number().default(3000),
+  SUPER_ADMIN: Joi.string().required(),
   // Database
   DB_HOST: Joi.string().default("localhost"),
   DB_PORT: Joi.number().default(5432),

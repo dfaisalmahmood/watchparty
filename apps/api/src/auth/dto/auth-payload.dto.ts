@@ -1,18 +1,44 @@
-import { Field, ObjectType, PickType } from "@nestjs/graphql";
+import {
+  createUnionType,
+  Field,
+  ObjectType,
+  PartialType,
+  PickType,
+} from "@nestjs/graphql";
 import { User } from "../../users/entities/user.entity";
 
 @ObjectType()
 export class AuthUserPayload extends PickType(User, [
   "id",
   "username",
-  "email",
   "accountStatus",
+  "accountRole",
 ] as const) {}
 
 @ObjectType()
+export class VerifyUserPayload extends PickType(User, [
+  "id",
+  "username",
+  "email",
+  "accountStatus",
+  "accountRole",
+] as const) {}
+
+export const UserPayload = createUnionType({
+  name: "UserPayload",
+  types: () => [AuthUserPayload, VerifyUserPayload],
+  resolveType(value) {
+    if (value.email) {
+      return VerifyUserPayload;
+    }
+    return AuthUserPayload;
+  },
+});
+
+@ObjectType()
 export class AuthPayload {
-  @Field(() => AuthUserPayload, { nullable: false })
-  user: AuthUserPayload;
+  @Field(() => UserPayload, { nullable: false })
+  user: typeof UserPayload;
 
   @Field({ nullable: false })
   accessToken: string;

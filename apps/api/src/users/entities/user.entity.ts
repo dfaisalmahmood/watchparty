@@ -9,6 +9,7 @@ import {
 } from "typeorm";
 import { Exclude } from "class-transformer";
 import { AccountStatus } from "./account-status.enum";
+import { AccountRole } from "./accountRole.enum";
 
 export const EMAIL_CONSTRAINT = "UQ_user_email";
 export const USERNAME_CONSTRAINT = "UQ_user_username";
@@ -44,4 +45,13 @@ export class User extends BaseEntity {
   })
   @Field((type) => AccountStatus, { nullable: true })
   accountStatus: AccountStatus;
+
+  @Column({
+    type: "enum",
+    enum: AccountRole,
+    default: AccountRole.User,
+    nullable: false,
+  })
+  @Field((type) => AccountRole, { nullable: true })
+  accountRole: AccountRole;
 }

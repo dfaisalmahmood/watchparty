@@ -7,6 +7,7 @@ type User {
   email: String!
   username: String!
   accountStatus: AccountStatus
+  accountRole: AccountRole
 }
 
 enum AccountStatus {
@@ -15,21 +16,37 @@ enum AccountStatus {
   Banned
 }
 
-type AuthUserPayload {
+enum AccountRole {
+  User
+  Admin
+  SuperAdmin
+}
+
+type VerifyUserPayload {
   id: String!
   email: String!
   username: String!
   accountStatus: AccountStatus
+  accountRole: AccountRole
 }
 
 type AuthPayload {
-  user: AuthUserPayload!
+  user: UserPayload!
   accessToken: String!
   refreshToken: String!
 }
 
+union UserPayload = AuthUserPayload | VerifyUserPayload
+
+type AuthUserPayload {
+  id: String!
+  username: String!
+  accountStatus: AccountStatus
+  accountRole: AccountRole
+}
+
 type RefreshPayload {
-  user: AuthUserPayload!
+  user: UserPayload!
   accessToken: String!
 }
 
@@ -48,7 +65,7 @@ type Mutation {
   removeUser(id: Int!): User!
 
   """Creates new user. Email and Username have to be unique."""
-  signup(signupData: SignUpInput!): AuthUserPayload!
+  signup(signupData: SignUpInput!): VerifyUserPayload!
 
   """
   Logs user in, attaches cookie to client as HttpOnly, returns user info and JWT access_token.

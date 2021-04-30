@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import {
@@ -41,6 +41,9 @@ async function bootstrap() {
   app.register(fastifyCookie, {
     secret: config.get("cookies.secret"),
   });
+
+  // Validation
+  app.useGlobalPipes(new ValidationPipe());
   await app.listen(port, () => {
     Logger.log("Listening at http://localhost:" + port + "/" + globalPrefix);
     Logger.log(`Running in ${config.get("environment")} mode`);
