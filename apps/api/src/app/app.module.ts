@@ -1,3 +1,4 @@
+import { CaslModule } from "./../casl/casl.module";
 import { Module } from "@nestjs/common";
 
 import { AppController } from "./app.controller";
@@ -8,7 +9,7 @@ import { AuthModule } from "../auth/auth.module";
 import { MailModule } from "../mail/mail.module";
 
 @Module({
-  imports: [CoreModule, UsersModule, AuthModule, MailModule],
+  imports: [CaslModule, CoreModule, UsersModule, AuthModule, MailModule],
   controllers: [AppController],
   providers: [AppService],
 })

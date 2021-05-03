@@ -41,7 +41,7 @@ import mailConfig from "./config/mail.config";
         database: config.get("database.name"),
         username: config.get("database.username"),
         password: config.get("database.password"),
-        entities: ["dist/**/*.entity{.ts,.js}"],
+        // entities: ["dist/**/*.entity{.ts,.js}"],
         synchronize: config.get("environment") === "production" ? false : true,
         autoLoadEntities: true,
       }),

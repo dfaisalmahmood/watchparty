@@ -4,36 +4,43 @@ import { User } from "./entities/user.entity";
 import { CreateUserInput } from "./dto/create-user.input";
 import { UpdateUserInput } from "./dto/update-user.input";
 import { Public } from "../auth/decorators/public.decorator";
+import { BaseResolver } from "../app/common/base.resolver";
 
 @Resolver(() => User)
-export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
-
-  @Mutation(() => User)
-  @Public()
-  createUser(@Args("createUserInput") createUserInput: CreateUserInput) {
-    return this.usersService.create(createUserInput);
+export class UsersResolver extends BaseResolver(
+  User,
+  CreateUserInput,
+  UpdateUserInput,
+) {
+  constructor(private readonly usersService: UsersService) {
+    super(usersService);
   }
 
-  @Query(() => [User], { name: "users" })
-  findAll() {
-    return this.usersService.findAll();
-  }
+  // @Mutation(() => User)
+  // @Public()
+  // createUser(@Args("createUserInput") createUserInput: CreateUserInput) {
+  //   return this.usersService.create(createUserInput);
+  // }
 
-  @Query(() => User, { name: "user" })
-  findOne(@Args("id", { type: () => Int }) id: number) {
-    return this.usersService.findOne(id);
-  }
+  // @Query(() => [User], { name: "users" })
+  // findAll() {
+  //   return this.usersService.findAll();
+  // }
 
-  @Mutation(() => User)
-  updateUser(@Args("updateUserInput") updateUserInput: UpdateUserInput) {
-    return this.usersService.update(updateUserInput.id, updateUserInput);
-  }
+  // @Query(() => User, { name: "user" })
+  // findOne(@Args("id", { type: () => Int }) id: number) {
+  //   return this.usersService.findOne(id);
+  // }
 
-  @Mutation(() => User)
-  removeUser(@Args("id", { type: () => Int }) id: number) {
-    return this.usersService.remove(id);
-  }
+  // @Mutation(() => User)
+  // updateUser(@Args("updateUserInput") updateUserInput: UpdateUserInput) {
+  //   return this.usersService.update(updateUserInput.id, updateUserInput);
+  // }
+
+  // @Mutation(() => User)
+  // removeUser(@Args("id", { type: () => Int }) id: number) {
+  //   return this.usersService.remove(id);
+  // }
 
   // @Mutation(() => User)
   // async login(@Args("loginData") loginData: LoginInput) {

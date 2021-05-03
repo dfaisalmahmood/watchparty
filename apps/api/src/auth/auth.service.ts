@@ -31,7 +31,7 @@ import {
   UserInReq,
   VerifyAccountTokenPayload,
 } from "./token-payload.interface";
-import { AccountRole } from "../users/entities/accountRole.enum";
+import { AccountRole } from "../users/entities/account-role.enum";
 
 @Injectable()
 export class AuthService {
@@ -187,6 +187,7 @@ export class AuthService {
   async signup(createUserData: CreateUserInput) {
     try {
       const hashedPass = await this.encryption.hash(createUserData.password);
+      // TODO: Needs to be fixed
       createUserData = { ...createUserData, password: hashedPass };
       const accountRole =
         createUserData.email === this.config.get("superAdmin")
@@ -240,7 +241,7 @@ export class AuthService {
   }
 
   async getProfile(userId: string) {
-    return await this.usersService.findById(userId);
+    return await this.usersService.findOne(userId);
   }
 }
 

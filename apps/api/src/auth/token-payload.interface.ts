@@ -1,5 +1,5 @@
 import { AccountStatus } from "../users/entities/account-status.enum";
-import { AccountRole } from "../users/entities/accountRole.enum";
+import { AccountRole } from "../users/entities/account-role.enum";
 
 export interface TokenPayload {
   sub: string; // UserID

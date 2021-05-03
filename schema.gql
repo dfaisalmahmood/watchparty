@@ -4,11 +4,19 @@
 
 type User {
   id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
   email: String!
   username: String!
-  accountStatus: AccountStatus
-  accountRole: AccountRole
+  accountStatus: AccountStatus!
+  accountRole: AccountRole!
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 enum AccountStatus {
   Unverified
@@ -26,8 +34,8 @@ type VerifyUserPayload {
   id: String!
   email: String!
   username: String!
-  accountStatus: AccountStatus
-  accountRole: AccountRole
+  accountStatus: AccountStatus!
+  accountRole: AccountRole!
 }
 
 type AuthPayload {
@@ -41,8 +49,8 @@ union UserPayload = AuthUserPayload | VerifyUserPayload
 type AuthUserPayload {
   id: String!
   username: String!
-  accountStatus: AccountStatus
-  accountRole: AccountRole
+  accountStatus: AccountStatus!
+  accountRole: AccountRole!
 }
 
 type RefreshPayload {
@@ -50,19 +58,37 @@ type RefreshPayload {
   accessToken: String!
 }
 
+input UserInput {
+  email: String!
+  username: String!
+  accountStatus: AccountStatus!
+  accountRole: AccountRole!
+}
+
 type Query {
   uptime: Float!
-  users: [User!]!
-  user(id: Int!): User!
+  findAllUser: [User!]!
+  findOneUser(id: String!): User!
+  findUser(partialItem: UpdateUserInput!): [User!]!
 
   """Returns full user info (without password)."""
   profile: User!
 }
 
+input UpdateUserInput {
+  id: String!
+  email: String!
+  username: String!
+  accountRole: AccountRole!
+  accountStatus: AccountStatus!
+}
+
 type Mutation {
-  createUser(createUserInput: CreateUserInput!): User!
-  updateUser(updateUserInput: UpdateUserInput!): User!
-  removeUser(id: Int!): User!
+  createUser(item: CreateUserInput!): User!
+  updateUser(partialItem: UpdateUserInput!, id: String!): Boolean!
+  deleteUser(ids: [String!]!): Boolean!
+  restoreUser(ids: [String!]!): Boolean!
+  deletePermanentUser(ids: [String!]!): Boolean!
 
   """Creates new user. Email and Username have to be unique."""
   signup(signupData: SignUpInput!): VerifyUserPayload!
@@ -88,13 +114,6 @@ input CreateUserInput {
   email: String!
   username: String!
   password: String!
-}
-
-input UpdateUserInput {
-  email: String
-  username: String
-  password: String
-  id: String!
 }
 
 input SignUpInput {

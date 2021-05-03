@@ -31,6 +31,7 @@ export const UserPayload = createUnionType({
     if (value.email) {
       return VerifyUserPayload;
     }
+
     return AuthUserPayload;
   },
 });
